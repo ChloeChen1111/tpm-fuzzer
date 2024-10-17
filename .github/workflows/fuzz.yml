@@ -1,0 +1,33 @@
+name: Go Fuzz Testing
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  fuzz-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.18'
+
+      - name: Run fuzz tests
+        run: |
+          go test ./tpm -fuzz=FuzzProcessInput -fuzztime=60s
+
+      - name: Upload fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: fuzzing-crashers
+          path: ./tpm/testdata/fuzz/FuzzProcessInput
